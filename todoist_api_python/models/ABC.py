@@ -2,7 +2,7 @@ from typing import Any
 from abc import ABC, abstractmethod
 
 class TodoistObject(ABC):
-    def __init__(self, raw_data : dict[str,Any]):
+    def __init__(self, raw_data : dict[str,Any], env : "TodoistEnv"):
         """
         raw_data is a dictionary received directly from the API
         It has the following keys: access, can_assign_tasks, child_order, color, created_at, creator_uid, default_order, description, id, is_archived, is_collapsed, is_deleted, is_favorite, is_frozen, is_shared, name, parent_id, public_access, public_key, role, updated_at, view_style
@@ -14,6 +14,7 @@ class TodoistObject(ABC):
         If you find yourself accessing these keys, please consider forking this package and writing proper getter/setters for them.
         """
         self._id = raw_data.pop("id")
+        self._env = env
 
         # Properties reflected in the API interactions
         self._extract_values(raw_data)
@@ -31,13 +32,8 @@ class TodoistObject(ABC):
         """
         return cls(raw_data)
 
-    @classmethod
     @abstractmethod
-    def create_new(cls, api, name): # TODO don't pass in API, instead use a singleton
-        raise NotImplementedError("Create new method not implemented. Please implement this method in your subclass.")
-
-    @abstractmethod
-    def delete(self, api):
+    def delete(self):
         """
         Delete this item.
         """
@@ -52,21 +48,18 @@ class TodoistObject(ABC):
     def _extract_values(self, raw_data: dict[str, Any]):
         raise NotImplementedError("This method should be overridden by subclasses to extract specific values from raw_data.")
 
-    def push_updates(self, api):
+    def push_updates(self):
         """
         Push updates to this item to the Todoist API.
         Checks if the item has been modified then calls _push_updates.
         If the item has not been modified, no API call is made.
         """
         if self._modified:
-            api._push_updates(
-                object_id=self._id,
-                # Add other properties as needed
-            )
+            self._push_updates()
             self._modified = False
 
     @abstractmethod
-    def _push_updates(self, api):
+    def _push_updates(self):
         """
         Internal method to push updates to the API.
         This is a placeholder and should be implemented in subclasses.

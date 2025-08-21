@@ -4,24 +4,17 @@ from typing import Any
 class Task(TodoistObject):
     def _extract_values(self, raw_data: dict[str, Any]):
         self.content = raw_data.pop("content")
+        self.project = [ project for project in self._env.projects if project._id == raw_data.pop("project_id") ][0]
 
-    @classmethod
-    def create_new(cls, api, content): # TODO don't pass in API, instead use a singleton
-        response = api.add_task(
-            content=content
-            # Add other properties as needed
-        )
-        return response
-
-    def _push_updates(self, api):
-        api.update_task(
+    def _push_updates(self):
+        self._env.api.update_task(
             task_id=self._id,
             content=self.content,
             # Add other properties as needed
         )
 
-    def delete(self, api):
+    def delete(self):
         """
         Delete this item.
         """
-        api.delete_task(self._id)
+        self._env.api.delete_task(self._id)
