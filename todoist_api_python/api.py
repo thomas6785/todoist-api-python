@@ -32,15 +32,16 @@ from todoist_api_python._core.utils import (
     format_date,
     format_datetime,
 )
-from todoist_api_python.models import (
+from todoist_api_python.old_models import (
     Attachment,
     Collaborator,
-    Comment,
-    Label,
-    Project,
-    Section,
-    Task,
 )
+
+from todoist_api_python.models.project  import  Project
+from todoist_api_python.models.section  import  Section
+from todoist_api_python.models.task     import  Task
+from todoist_api_python.models.label    import  Label
+from todoist_api_python.models.comment  import  Comment
 
 if TYPE_CHECKING:
     from datetime import date, datetime
