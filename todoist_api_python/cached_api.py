@@ -81,8 +81,6 @@ class CachedTodoistAPI(TodoistAPI):
     Note paginated results are returned as a 2D list instead of an iterator of lists.
     This is to accommodate caching.
     """
-    # TODO call API sync on '__enter__' and prime all the caches with the data to minimise outgoing API calls
-    # TODO retain a local copy of the data and use a sync token to minimise the size of the API response
     # TODO implement much smarter cache invalidation by only invalidating caches that are relevant to the data that was changed
     # There are only two hard things in computer science: cache invalidation and naming things - Phil Karlton
 
@@ -118,8 +116,7 @@ class CachedTodoistAPI(TodoistAPI):
 
     # TODO be smarter and only invalidate the caches for methods where it is relevant, e.g. get_task(task_id) only needs to be invalidated for that task_id
     # This is a little complicated when it comes to things like get_tasks(project_id)
-    # For now, we will zealously invalidate any cache in the relevant list:
-
+    # For now, we will zealously invalidate any vaguely relevant cache as below:
     HIGHLY_SENSITIVE_CACHES = {filter_tasks, get_completed_tasks_by_completion_date, get_completed_tasks_by_due_date} # always clear this cache because the filter queries can select for pretty much anything
 
     TASK_SENSITIVE_CACHES    = HIGHLY_SENSITIVE_CACHES | {get_task, get_tasks}
