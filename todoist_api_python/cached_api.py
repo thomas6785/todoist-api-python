@@ -21,7 +21,6 @@ def cached(func):
     func._cached_values = {}
     func._cache_hits = 0
     func._cache_misses = 0
-    @log_calls
     @wraps(func)
     def wrapped_function(*args,**kwargs):
         key = make_args_hashable(args,kwargs)
