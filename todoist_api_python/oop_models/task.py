@@ -2,7 +2,7 @@ from todoist_api_python.oop_models.base import TodoistObject
 from todoist_api_python._core.endpoints import get_task_url
 from todoist_api_python._core.utils import log_method_calls
 
-@log_method_calls(exclude_private=True, exclude_dunder=True) # Log calls to any method except dunders, private, and properties
+@log_method_calls(exclude_private=True, exclude_dunder=True) # Log calls to any method except dunders and private
 class Task(TodoistObject):
     _data       = property( lambda self : self.env._get_task_data_by_id(self._id) )
 
@@ -12,7 +12,7 @@ class Task(TodoistObject):
     #
     #################################################################
     url          = property( lambda self : get_task_url(self._id,self.content) )
-    added_at     = property( lambda self : self._data.added_at     )
+    created_at   = property( lambda self : self._data.created_at  )
     updated_at   = property( lambda self : self._data.updated_at   )
     completed_at = property( lambda self : self._data.completed_at )
 
