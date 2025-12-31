@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import sys
 from collections.abc import Callable, Iterator
 from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeVar
@@ -32,25 +30,9 @@ from todoist_api_python._core.utils import (
     format_date,
     format_datetime,
 )
-from todoist_api_python.models import (
-    Attachment,
-    Collaborator,
-    Comment,
-    Label,
-    Project,
-    Section,
-    Task,
-)
 
-if TYPE_CHECKING:
-    from datetime import date, datetime
-    from types import TracebackType
-
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    Self = TypeVar("Self", bound="TodoistAPI")
-
+from datetime import date, datetime
+from types import TracebackType
 
 LanguageCode = Annotated[str, Predicate(lambda x: len(x) == 2)]  # noqa: PLR2004
 ColorString = Annotated[
@@ -113,7 +95,7 @@ class TodoistAPI:
         self._session = session or requests.Session()
         self._finalizer = finalize(self, self._session.close)
 
-    def __enter__(self) -> Self:
+    def __enter__(self):
         """
         Enters the runtime context related to this object.
 
@@ -133,7 +115,7 @@ class TodoistAPI:
         """Exit the runtime context and closes the underlying requests session."""
         self._finalizer()
 
-    def get_task(self, task_id: str) -> Task:
+    def get_task(self, task_id: str) -> dict[str, Any]:
         """
         Get a specific task by its ID.
 
@@ -149,7 +131,7 @@ class TodoistAPI:
             self._token,
             self._request_id_fn() if self._request_id_fn else None,
         )
-        return Task.from_dict(task_data)
+        return task_data
 
     def get_tasks(
         self,
@@ -160,7 +142,7 @@ class TodoistAPI:
         label: str | None = None,
         ids: list[str] | None = None,
         limit: Annotated[int, Ge(1), Le(200)] | None = None,
-    ) -> Iterator[list[Task]]:
+    ) -> Iterator[dict[str, Any]]:
         """
         Get an iterable of lists of active tasks.
 
@@ -198,7 +180,6 @@ class TodoistAPI:
             self._session,
             endpoint,
             "results",
-            Task.from_dict,
             self._token,
             self._request_id_fn,
             params,
@@ -210,7 +191,7 @@ class TodoistAPI:
         query: Annotated[str, MaxLen(1024)] | None = None,
         lang: str | None = None,
         limit: Annotated[int, Ge(1), Le(200)] | None = None,
-    ) -> Iterator[list[Task]]:
+    ) -> Iterator[dict[str, Any]]:
         """
         Get an iterable of lists of active tasks matching the filter.
 
@@ -239,7 +220,6 @@ class TodoistAPI:
             self._session,
             endpoint,
             "results",
-            Task.from_dict,
             self._token,
             self._request_id_fn,
             params,
@@ -267,7 +247,7 @@ class TodoistAPI:
         duration_unit: Literal["minute", "day"] | None = None,
         deadline_date: date | None = None,
         deadline_lang: LanguageCode | None = None,
-    ) -> Task:
+    ) -> dict[str, Any]:
         """
         Create a new task.
 
@@ -341,7 +321,7 @@ class TodoistAPI:
             self._request_id_fn() if self._request_id_fn else None,
             data=data,
         )
-        return Task.from_dict(task_data)
+        return task_data
 
     def add_task_quick(
         self,
@@ -350,7 +330,7 @@ class TodoistAPI:
         note: str | None = None,
         reminder: str | None = None,
         auto_reminder: bool = True,
-    ) -> Task:
+    ) -> dict[str, Any]:
         """
         Create a new task using Todoist's Quick Add syntax.
 
@@ -385,7 +365,7 @@ class TodoistAPI:
             self._request_id_fn() if self._request_id_fn else None,
             data=data,
         )
-        return Task.from_dict(task_data)
+        return task_data
 
     def update_task(  # noqa: PLR0912
         self,
@@ -406,7 +386,7 @@ class TodoistAPI:
         duration_unit: Literal["minute", "day"] | None = None,
         deadline_date: date | None = None,
         deadline_lang: LanguageCode | None = None,
-    ) -> Task:
+    ) -> dict[str, Any]:
         """
         Update an existing task.
 
@@ -472,7 +452,7 @@ class TodoistAPI:
             self._request_id_fn() if self._request_id_fn else None,
             data=data,
         )
-        return Task.from_dict(task_data)
+        return task_data
 
     def complete_task(self, task_id: str) -> bool:
         """
@@ -587,7 +567,7 @@ class TodoistAPI:
         filter_query: str | None = None,
         filter_lang: str | None = None,
         limit: Annotated[int, Ge(1), Le(200)] | None = None,
-    ) -> Iterator[list[Task]]:
+    ) -> Iterator[dict[str, Any]]:
         """
         Get an iterable of lists of completed tasks within a due date range.
 
@@ -636,7 +616,6 @@ class TodoistAPI:
             self._session,
             endpoint,
             "items",
-            Task.from_dict,
             self._token,
             self._request_id_fn,
             params,
@@ -651,7 +630,7 @@ class TodoistAPI:
         filter_query: str | None = None,
         filter_lang: str | None = None,
         limit: Annotated[int, Ge(1), Le(200)] | None = None,
-    ) -> Iterator[list[Task]]:
+    ) -> Iterator[dict[str, Any]]:
         """
         Get an iterable of lists of completed tasks within a date range.
 
@@ -691,13 +670,12 @@ class TodoistAPI:
             self._session,
             endpoint,
             "items",
-            Task.from_dict,
             self._token,
             self._request_id_fn,
             params,
         )
 
-    def get_project(self, project_id: str) -> Project:
+    def get_project(self, project_id: str) -> dict[str, Any]:
         """
         Get a project by its ID.
 
@@ -713,12 +691,12 @@ class TodoistAPI:
             self._token,
             self._request_id_fn() if self._request_id_fn else None,
         )
-        return Project.from_dict(project_data)
+        return project_data
 
     def get_projects(
         self,
         limit: Annotated[int, Ge(1), Le(200)] | None = None,
-    ) -> Iterator[list[Project]]:
+    ) -> Iterator[dict[str, Any]]:
         """
         Get an iterable of lists of active projects.
 
@@ -739,7 +717,6 @@ class TodoistAPI:
             self._session,
             endpoint,
             "results",
-            Project.from_dict,
             self._token,
             self._request_id_fn,
             params,
@@ -754,7 +731,7 @@ class TodoistAPI:
         color: ColorString | None = None,
         is_favorite: bool | None = None,
         view_style: ViewStyle | None = None,
-    ) -> Project:
+    ) -> dict[str, Any]:
         """
         Create a new project.
 
@@ -789,7 +766,7 @@ class TodoistAPI:
             self._request_id_fn() if self._request_id_fn else None,
             data=data,
         )
-        return Project.from_dict(project_data)
+        return project_data
 
     def update_project(
         self,
@@ -800,7 +777,7 @@ class TodoistAPI:
         color: ColorString | None = None,
         is_favorite: bool | None = None,
         view_style: ViewStyle | None = None,
-    ) -> Project:
+    ) -> dict[str, Any]:
         """
         Update an existing project.
 
@@ -837,9 +814,9 @@ class TodoistAPI:
             self._request_id_fn() if self._request_id_fn else None,
             data=data,
         )
-        return Project.from_dict(project_data)
+        return project_data
 
-    def archive_project(self, project_id: str) -> Project:
+    def archive_project(self, project_id: str) -> dict[str, Any]:
         """
         Archive a project.
 
@@ -860,9 +837,9 @@ class TodoistAPI:
             self._token,
             self._request_id_fn() if self._request_id_fn else None,
         )
-        return Project.from_dict(project_data)
+        return project_data
 
-    def unarchive_project(self, project_id: str) -> Project:
+    def unarchive_project(self, project_id: str) -> dict[str, Any]:
         """
         Unarchive a project.
 
@@ -882,7 +859,7 @@ class TodoistAPI:
             self._token,
             self._request_id_fn() if self._request_id_fn else None,
         )
-        return Project.from_dict(project_data)
+        return project_data
 
     def delete_project(self, project_id: str) -> bool:
         """
@@ -907,7 +884,7 @@ class TodoistAPI:
         self,
         project_id: str,
         limit: Annotated[int, Ge(1), Le(200)] | None = None,
-    ) -> Iterator[list[Collaborator]]:
+    ) -> Iterator[dict[str, Any]]:
         """
         Get an iterable of lists of collaborators in shared projects.
 
@@ -929,13 +906,12 @@ class TodoistAPI:
             self._session,
             endpoint,
             "results",
-            Collaborator.from_dict,
             self._token,
             self._request_id_fn,
             params,
         )
 
-    def get_section(self, section_id: str) -> Section:
+    def get_section(self, section_id: str) -> dict[str, Any]:
         """
         Get a specific section by its ID.
 
@@ -951,14 +927,14 @@ class TodoistAPI:
             self._token,
             self._request_id_fn() if self._request_id_fn else None,
         )
-        return Section.from_dict(section_data)
+        return section_data
 
     def get_sections(
         self,
         project_id: str | None = None,
         *,
         limit: Annotated[int, Ge(1), Le(200)] | None = None,
-    ) -> Iterator[list[Section]]:
+    ) -> Iterator[dict[str, Any]]:
         """
         Get an iterable of lists of active sections.
 
@@ -986,7 +962,6 @@ class TodoistAPI:
             self._session,
             endpoint,
             "results",
-            Section.from_dict,
             self._token,
             self._request_id_fn,
             params,
@@ -998,7 +973,7 @@ class TodoistAPI:
         project_id: str,
         *,
         order: int | None = None,
-    ) -> Section:
+    ) -> dict[str, Any]:
         """
         Create a new section within a project.
 
@@ -1022,13 +997,13 @@ class TodoistAPI:
             self._request_id_fn() if self._request_id_fn else None,
             data=data,
         )
-        return Section.from_dict(section_data)
+        return section_data
 
     def update_section(
         self,
         section_id: str,
         name: Annotated[str, MinLen(1), MaxLen(2048)],
-    ) -> Section:
+    ) -> dict[str, Any]:
         """
         Update an existing section.
 
@@ -1047,7 +1022,7 @@ class TodoistAPI:
             self._request_id_fn() if self._request_id_fn else None,
             data={"name": name},
         )
-        return Section.from_dict(section_data)
+        return section_data
 
     def delete_section(self, section_id: str) -> bool:
         """
@@ -1068,7 +1043,7 @@ class TodoistAPI:
             self._request_id_fn() if self._request_id_fn else None,
         )
 
-    def get_comment(self, comment_id: str) -> Comment:
+    def get_comment(self, comment_id: str) -> dict[str, Any]:
         """
         Get a specific comment by its ID.
 
@@ -1084,7 +1059,7 @@ class TodoistAPI:
             self._token,
             self._request_id_fn() if self._request_id_fn else None,
         )
-        return Comment.from_dict(comment_data)
+        return comment_data
 
     def get_comments(
         self,
@@ -1092,7 +1067,7 @@ class TodoistAPI:
         project_id: str | None = None,
         task_id: str | None = None,
         limit: Annotated[int, Ge(1), Le(200)] | None = None,
-    ) -> Iterator[list[Comment]]:
+    ) -> Iterator[dict[str, Any]]:
         """
         Get an iterable of lists of comments for a task or project.
 
@@ -1127,7 +1102,6 @@ class TodoistAPI:
             self._session,
             endpoint,
             "results",
-            Comment.from_dict,
             self._token,
             self._request_id_fn,
             params,
@@ -1139,9 +1113,9 @@ class TodoistAPI:
         *,
         project_id: str | None = None,
         task_id: str | None = None,
-        attachment: Attachment | None = None,
+        attachment: None = None,
         uids_to_notify: list[str] | None = None,
-    ) -> Comment:
+    ) -> dict[str, Any]:
         """
         Create a new comment on a task or project.
 
@@ -1180,11 +1154,11 @@ class TodoistAPI:
             self._request_id_fn() if self._request_id_fn else None,
             data=data,
         )
-        return Comment.from_dict(comment_data)
+        return comment_data
 
     def update_comment(
         self, comment_id: str, content: Annotated[str, MaxLen(15000)]
-    ) -> Comment:
+    ) -> dict[str, Any]:
         """
         Update an existing comment.
 
@@ -1203,7 +1177,7 @@ class TodoistAPI:
             self._request_id_fn() if self._request_id_fn else None,
             data={"content": content},
         )
-        return Comment.from_dict(comment_data)
+        return comment_data
 
     def delete_comment(self, comment_id: str) -> bool:
         """
@@ -1222,7 +1196,7 @@ class TodoistAPI:
             self._request_id_fn() if self._request_id_fn else None,
         )
 
-    def get_label(self, label_id: str) -> Label:
+    def get_label(self, label_id: str) -> dict[str, Any]:
         """
         Get a specific personal label by its ID.
 
@@ -1238,13 +1212,13 @@ class TodoistAPI:
             self._token,
             self._request_id_fn() if self._request_id_fn else None,
         )
-        return Label.from_dict(label_data)
+        return label_data
 
     def get_labels(
         self,
         *,
         limit: Annotated[int, Ge(1), Le(200)] | None = None,
-    ) -> Iterator[list[Label]]:
+    ) -> Iterator[dict[str, Any]]:
         """
         Get an iterable of lists of personal labels.
 
@@ -1269,7 +1243,6 @@ class TodoistAPI:
             self._session,
             endpoint,
             "results",
-            Label.from_dict,
             self._token,
             self._request_id_fn,
             params,
@@ -1282,7 +1255,7 @@ class TodoistAPI:
         color: ColorString | None = None,
         item_order: int | None = None,
         is_favorite: bool | None = None,
-    ) -> Label:
+    ) -> dict[str, Any]:
         """
         Create a new personal label.
 
@@ -1312,7 +1285,7 @@ class TodoistAPI:
             self._request_id_fn() if self._request_id_fn else None,
             data=data,
         )
-        return Label.from_dict(label_data)
+        return label_data
 
     def update_label(
         self,
@@ -1322,7 +1295,7 @@ class TodoistAPI:
         color: ColorString | None = None,
         item_order: int | None = None,
         is_favorite: bool | None = None,
-    ) -> Label:
+    ) -> dict[str, Any]:
         """
         Update a personal label.
 
@@ -1355,7 +1328,7 @@ class TodoistAPI:
             self._request_id_fn() if self._request_id_fn else None,
             data=data,
         )
-        return Label.from_dict(label_data)
+        return label_data
 
     def delete_label(self, label_id: str) -> bool:
         """
@@ -1381,7 +1354,7 @@ class TodoistAPI:
         *,
         omit_personal: bool = False,
         limit: Annotated[int, Ge(1), Le(200)] | None = None,
-    ) -> Iterator[list[str]]:
+    ) -> Iterator[dict[str, Any]]:
         """
         Get an iterable of lists of shared label names.
 
@@ -1409,7 +1382,6 @@ class TodoistAPI:
             self._session,
             endpoint,
             "results",
-            str,
             self._token,
             self._request_id_fn,
             params,
@@ -1458,11 +1430,7 @@ class TodoistAPI:
             data=data,
         )
 
-
-T = TypeVar("T")
-
-
-class ResultsPaginator(Iterator[list[T]]):
+class ResultsPaginator(Iterator[dict[str, Any]]):
     """
     Iterator for paginated results from the Todoist API.
 
@@ -1474,7 +1442,6 @@ class ResultsPaginator(Iterator[list[T]]):
     _session: requests.Session
     _url: str
     _results_field: str
-    _results_inst: Callable[[Any], T]
     _token: str
     _cursor: str | None
 
@@ -1483,7 +1450,6 @@ class ResultsPaginator(Iterator[list[T]]):
         session: requests.Session,
         url: str,
         results_field: str,
-        results_inst: Callable[[Any], T],
         token: str,
         request_id_fn: Callable[[], str] | None,
         params: dict[str, Any],
@@ -1501,35 +1467,45 @@ class ResultsPaginator(Iterator[list[T]]):
         self._session = session
         self._url = url
         self._results_field = results_field
-        self._results_inst = results_inst
         self._token = token
         self._request_id_fn = request_id_fn
         self._params = params
         self._cursor = ""  # empty string for first page
+        self._queue = []
 
-    def __next__(self) -> list[T]:
+    def __next__(self) -> dict[str, Any]:
         """
-        Fetch and return the next page of results from the Todoist API.
+        Fetch and return the next item from the results.
 
-        :return: A list of results.
+        Makes an API request when the queue runs out of items.
+
+        :return: A single result item.
+        :raises StopIteration: When there are no more results.
         :raises requests.exceptions.HTTPError: If the API request fails.
         :raises TypeError: If the API response structure is unexpected.
         """
-        if self._cursor is None:
-            raise StopIteration
+        # Fetch new page if queue is empty
+        if not self._queue:
+            if self._cursor is None:
+                raise StopIteration
 
-        params = self._params.copy()
-        if self._cursor != "":
-            params["cursor"] = self._cursor
+            params = self._params.copy()
+            if self._cursor != "":
+                params["cursor"] = self._cursor
 
-        data: dict[str, Any] = get(
-            self._session,
-            self._url,
-            self._token,
-            self._request_id_fn() if self._request_id_fn else None,
-            params,
-        )
-        self._cursor = data.get("next_cursor")
+            data: dict[str, Any] = get(
+                self._session,
+                self._url,
+                self._token,
+                self._request_id_fn() if self._request_id_fn else None,
+                params,
+            )
+            self._cursor = data.get("next_cursor")
+            self._queue: list[Any] = data.get(self._results_field, [])
 
-        results: list[Any] = data.get(self._results_field, [])
-        return [self._results_inst(result) for result in results]
+            # If no results and no next cursor, we're done
+            if not self._queue and self._cursor is None:
+                raise StopIteration
+
+        # Return next item from queue
+        return self._queue.pop(0)
